@@ -1,0 +1,6 @@
+[package]
+name = "xq"
+version = "0.1.0"
+authors = ["Roland Tepp <luolong@gmail.com>"]
+
+[dependencies]
