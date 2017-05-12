@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Roland Tepp <luolong@gmail.com>"]
 
 [dependencies]
+clap = "~2.23.3"
+xml-rs = "0.4"
+chomp = "0.3.1"
