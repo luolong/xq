@@ -1,9 +1,4 @@
-use std::io::{Read, Write};
-use std::fs::File;
-use std::path::Path;
-use std::iter::Iterator;
-
-use std::fmt::{Display, Formatter};
+use std::io::prelude::*;
 
 #[macro_use]
 extern crate clap;
@@ -12,52 +7,16 @@ use clap::{Values, ArgMatches};
 extern crate xml;
 use xml::reader::EventReader;
 
-enum InputSource<'a> {
-    StdInput,
-    Filename(&'a str)
-}
+mod xq;
+use xq::input_source::InputSource;
 
-impl<'a> InputSource<'a> {
-    fn from_path(path: &'a str) -> InputSource<'a> {
-        InputSource::Filename(path)
-    }
-    fn from_stdin() -> InputSource<'a> {
-        InputSource::StdInput
-    }
-    fn open(&self) -> std::io::Result<Box<Read>> {
-        match *self {
-            InputSource::StdInput => {
-                let read : Box<Read> = Box::new(std::io::stdin());
-                Ok(read)
-            },
-            InputSource::Filename(path) => {
-                let path = Path::new(path);
-                match File::open(path) {
-                    Ok(file) => Ok(Box::new(file)),
-                    Err(e) => Err(e)
-                }
-            }
-        }
-    }
-}
 
-impl<'a> Display for InputSource<'a> {
-    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        match *self {
-            InputSource::StdInput => write!(f, "std::io::stdin()"),
-            InputSource::Filename(path) => write!(f, "{}", path)
-        }
-    }
-}
-
-fn input_sources(values: Option<Values>) -> Vec<InputSource> {
-    if let Some(values) = values {
+fn input_sources<'a>(values: Option<Values>) -> Vec<InputSource> {
+    let paths = values.and_then( |values| {
         let values : Vec<InputSource> = values.map(InputSource::from_path).collect();
-        if !values.is_empty() {
-            return values;
-        }
-    }
-    return vec!(InputSource::from_stdin());
+        if values.is_empty() { None } else { Some(values) }
+    });
+    paths.unwrap_or(vec!(InputSource::from_stdin()))
 }
 
 
